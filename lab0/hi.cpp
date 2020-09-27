@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <cstdio>
 
-#define NUMBER_OF_TOSSES 100000000
+#define NUMBER_OF_TOSSES 1000000000
 using namespace std;
 
 int main () {
