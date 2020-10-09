@@ -107,6 +107,9 @@ template void _pp_vmove<int>(__pp_vec_int &dest, __pp_vec_int &src, __pp_mask &m
 void _pp_vmove_float(__pp_vec_float &dest, __pp_vec_float &src, __pp_mask &mask) { _pp_vmove<float>(dest, src, mask); }
 void _pp_vmove_int(__pp_vec_int &dest, __pp_vec_int &src, __pp_mask &mask) { _pp_vmove<int>(dest, src, mask); }
 
+
+// 這邊可以看到，假如 mask.value[i] == 1 ，那 vector 的這個位置就會被 dest 的值取代
+//                    mask.value[i] == 0 ，那 vector 的這個位置的值就不會變
 template <typename T>
 void _pp_vload(__pp_vec<T> &dest, T *src, __pp_mask &mask)
 {
