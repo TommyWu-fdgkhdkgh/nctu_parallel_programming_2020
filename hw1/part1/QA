@@ -1,0 +1,21 @@
+Q1-1: Does the vector utilization increase, decrease or stay the same as VECTOR_WIDTH changes? Why?
+
+增加 VECTOR_WIDTH 會減少 utilization
+16 --> 17
+90.1%--> 86.8%
+
+
+減少 VECTOR_WIDTH 也會減少 utilization
+16    --> 15
+90.1% --> 75.1%
+
+
+--> 會不會減少 utilization 也需要看 workload size ， workload size % VECTOR_WIDTH 最好要 == 0 ， 這樣在計算的時候，就不需要為了沒有被整除的部份再多執行一輪計算。
+
+
+utilization 的計算方式:
+
+每次計算 沒有被 mask 掉的 lane 都會 stats.utilized_lane++;
+全部的 lane == total_lane
+
+usage : utilized_lane / total_lane
