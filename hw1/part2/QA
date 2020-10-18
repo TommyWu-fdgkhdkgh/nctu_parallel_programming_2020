@@ -1,0 +1,45 @@
+Q2-1: Fix the code to make sure it uses aligned moves for the best performance.
+
+Hint: we want to see vmovaps rather than vmovups.
+
+------------------------------------------------
+Q2-1 note:
+
+
+當我們 diff assembly/test1.vec.restr.align.s assembly/test1.vec.restr.align.avx2.s
+的時候，可以看到 vmovups ， 而這裡是希望我們修改一下 code ， 讓 vmovups 變成 vmovaps
+
+TODO : 
+了解 vmovups v.s. vmovaps
+
+TODO :
+了解 avx2 instruction set
+
+------------------------------------------------
+
+
+
+Q2-2: What speedup does the vectorized code achieve over the unvectorized code? What additional speedup does using -mavx2 give (AVX2=1 in the Makefile)? You may wish to run this experiment several times and take median elapsed times; you can report answers to the nearest 100% (e.g., 2×, 3×, etc). What can you infer about the bit width of the default vector registers on the PP machines? What about the bit width of the AVX2 vector registers.
+
+Hint: Aside from speedup and the vectorization report, the most relevant information is that the data type for each array is float.
+
+
+
+------------------------------------------------
+Q2-2 note:
+
+
+
+------------------------------------------------
+
+
+Q2-3: Provide a theory for why the compiler is generating dramatically different assembly.
+
+
+
+------------------------------------------------
+Q2-3 note:
+
+
+
+------------------------------------------------

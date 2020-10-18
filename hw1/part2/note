@@ -1,0 +1,65 @@
+test1, test2, test3 是不同的操作。
+
+a, b, c 就是一維陣列
+
+ASSEMBLE : 
+	有下這個指令的話，就不會編譯出執行檔，只會把 test1.cpp 這個檔案編譯成 *.s 檔
+	然後把組語丟到 assembly 這個資料夾裡
+
+
+make clean; make --trace test1.o ASSEMBLE=1 VECTORIZE=1 RESTRICT=1 ALIGN=1 AVX2=1
+因為這邊我有聲明 target 為 test1.o ， 所以只會 generate test1.o 的 組語檔案
+
+make clean; make --trace  ASSEMBLE=1 VECTORIZE=1 RESTRICT=1 ALIGN=1 AVX2=1
+這樣的話就會生出所有的組語檔案
+
+
+1. 照著它的步驟慢慢把所有檔案產生出來
+2. 回答 Q2-1, 2-2, 2-3
+
+# case 1
+$ make clean && make && ./test_auto_vectorize -t 1
+Running test1()...
+Elapsed execution time of the loop in test1():
+7.75674sec (N: 1024, I: 20000000)
+
+# case 2
+$ make clean && make VECTORIZE=1 && ./test_auto_vectorize -t 1
+Running test1()...
+Elapsed execution time of the loop in test1():
+2.28267sec (N: 1024, I: 20000000)
+
+# case 3
+$ make clean && make VECTORIZE=1 AVX2=1 && ./test_auto_vectorize -t 1
+Running test1()...
+Elapsed execution time of the loop in test1():
+1.27325sec (N: 1024, I: 20000000)
+
+
+ifeq ($(ASSEMBLE),1)
+        CXXFLAGS += -S
+endif
+ifeq ($(VECTORIZE),1)
+        CXXFLAGS += -Rpass=loop-vectorize -Rpass-missed=loop-vectorize -Rpass-analysis=loop-vectorize
+        SUFFIX := .vec
+else
+        CXXFLAGS += -fno-vectorize
+        SUFFIX := .novec
+endif
+ifeq ($(RESTRICT),1)
+        SUFFIX := $(SUFFIX).restr
+endif
+ifeq ($(ALIGN),1)
+        SUFFIX := $(SUFFIX).align
+endif
+ifeq ($(AVX2),1)
+        CXXFLAGS += -mavx2
+        SUFFIX := $(SUFFIX).avx2
+endif
+ifeq ($(FASTMATH),1)
+        CXXFLAGS += -ffast-math
+        SUFFIX := $(SUFFIX).fmath
+endif
+
+
+
