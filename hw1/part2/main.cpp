@@ -53,6 +53,9 @@ int main(int argc, char * argv[]) {
   float* output = new(std::align_val_t{ 32 }) float[N];
   initValue(values1, values2, values3, output, N);
 
+  printf("&values1[0] : 0x%x\n", &values1[0]);
+  printf("&values1[1] : 0x%x\n", &values1[1]);
+
   cout << "Running test" << whichTestToRun << "()...\n";
   switch (whichTestToRun) {
     case 1: test1(values1, values2, output, N); break;

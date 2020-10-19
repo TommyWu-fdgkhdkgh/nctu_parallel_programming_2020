@@ -15,31 +15,81 @@ TODO :
 TODO :
 了解 avx2 instruction set
 
+
+太好了，看到了一個文章
+https://www.sciencedirect.com/topics/computer-science/alignment-requirement
+the 128-bit SSE registers have an alignment requirement of 16 bytes, that is, 128 bits
+the 256-bit Intel AVX registers have an alignment requirement of 32 bytes, that is, 256 bits,
+
+--> 所以把 align 改成 32 bytes 就可以了
+把 align 改成 32 bytes 後，就可以看到從 vmovups -> vmovaps
+
+在 main.cpp 也可以看到 float 本身就是 align 32 bytes 了
+
+有點微妙的文章，講述助教使用的 align_val_t 。 這似乎是 C++17 才有的新 feature
+https://www.bfilipek.com/2019/08/newnew-align.html
+
+align_val_t並不會影響單一元素的大小 --> &values1[0] 跟 &values1[1] 一樣相差四
+
 ------------------------------------------------
 
 
 
-Q2-2: What speedup does the vectorized code achieve over the unvectorized code? What additional speedup does using -mavx2 give (AVX2=1 in the Makefile)? You may wish to run this experiment several times and take median elapsed times; you can report answers to the nearest 100% (e.g., 2×, 3×, etc). What can you infer about the bit width of the default vector registers on the PP machines? What about the bit width of the AVX2 vector registers.
+Q2-2: 
+
+1. What speedup does the vectorized code achieve over the unvectorized code? 
+2.What additional speedup does using -mavx2 give (AVX2=1 in the Makefile)? 
+You may wish to run this experiment several times and take median elapsed times; you can report answers to the nearest 100% (e.g., 2×, 3×, etc). 
+
+3. What can you infer about the bit width of the default vector registers on the PP machines? 
+4. What about the bit width of the AVX2 vector registers.
 
 Hint: Aside from speedup and the vectorization report, the most relevant information is that the data type for each array is float.
 
+1. 這邊想比的應該是有跟沒有下  VECTORIZE=1 
 
+7.799937 --> 2.293333
+
+加速了 3.5x 倍左右
+
+2. 這邊應該是想比 VECTORIZE=1 v.s. VECTORIZE=1 AVX2=1 
+
+2.293333 --> 1.3310354
+
+加速了 2x 倍左右
+
+3. 這裡的 pp machine 是指上一個作業嗎?? 我猜，因為 default 的 vector width 是 4 個 element ， 每個 element 為 4 bytes ，所以總共是 16 bytes --> 128 bits ， 跟 SSE 暫存器一樣的大小
+
+也因為 SSE 的暫存器大小為 16 bytes(128 bits) ， 所以在 2.3 adding the __builtin_assume_aligned 的地方，只要 16 就可以拿到 movaps (align successfully) ，而 avx2 的暫存器大小為 32 bytes(256 bits) ，所以 __builtin_assume_aligned 需要 32 才能拿到 vmovaps (align successfully)
+
+4. 32 bytes (256 bits), 不知道這個也沒辦法回答上面那題(Q2-1)吧？
 
 ------------------------------------------------
 Q2-2 note:
-
 
 
 ------------------------------------------------
 
 
 Q2-3: Provide a theory for why the compiler is generating dramatically different assembly.
-
-
+這一題要連著 2.6 的範例來看的
 
 ------------------------------------------------
 Q2-3 note:
 
+好扯，加上那個 patch 後，速度整個飆起來，快了 4.5x 倍左右
+
+就我的感覺來說，新的寫法可以用 mask + 兩次 vector mov 達成
+舊的寫法也可以呀？？？
+
+# 10/19
+TODO : 感覺需要看最核心的部份，相同的意義，不同的寫法間各用了多少個 instruction 去完成
+且也要能了解 movups 跟 movaps 在意義上有什麼區別， maxps 又是什麼意思
+
+明天待續
 
 
 ------------------------------------------------
+
+
+

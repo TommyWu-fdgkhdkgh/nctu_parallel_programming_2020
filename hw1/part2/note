@@ -17,6 +17,8 @@ make clean; make --trace  ASSEMBLE=1 VECTORIZE=1 RESTRICT=1 ALIGN=1 AVX2=1
 1. 照著它的步驟慢慢把所有檔案產生出來
 2. 回答 Q2-1, 2-2, 2-3
 
+
+好屌。。。加速超多的阿
 # case 1
 $ make clean && make && ./test_auto_vectorize -t 1
 Running test1()...
