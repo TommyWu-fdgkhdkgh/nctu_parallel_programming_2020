@@ -1,3 +1,9 @@
+// 1. 害怕 a 跟 b 有重疊？
+// 2. 害怕 c 跟 b 有重疊？ 但這種情況不是 __restruct 濾掉了嘛？
+// 為什麼編譯器不平行給值，平行比較，再看看要不要給值呢？
+// 我想到的其中一個可能性是 &c[0] 跟 &b[1] 指向相同位址
+// 這會讓 serial 以及 SIMD 的執行結果不同。 但是這樣假設的話，那新的寫法也會有問題。
+
 	.text
 	.file	"test2.cpp"
 	.section	.rodata.cst8,"aM",@progbits,8
@@ -20,7 +26,7 @@ _Z5test2PfS_S_i:                        # @_Z5test2PfS_S_i
 	pushq	%r12
 	.cfi_def_cfa_offset 40
 	pushq	%rbx
-	.cfi_def_cfa_offset 48
+tually, you don’t need to do that, which is out of the scope of this assignment—you will see the code first checks if there is a partial overlap between arrays a and c or arrays b and c. If there is an overlap, then it does a simple non-vectorized code. If there is no overlap, it does a vectorized version. The a	.cfi_def_cfa_offset 48
 	subq	$32, %rsp
 	.cfi_def_cfa_offset 80
 	.cfi_offset %rbx, -48
@@ -44,37 +50,37 @@ _Z5test2PfS_S_i:                        # @_Z5test2PfS_S_i
 	.p2align	4, 0x90
 .LBB0_8:                                #   in Loop: Header=BB0_2 Depth=1
 	addl	$1, %eax
-	cmpl	$20000000, %eax         # imm = 0x1312D00
-	je	.LBB0_9
+	cmpl	$20000000, %eax         # imm = 0x1312D00  for(int i = 0;i < I;i++)  && I == 20000000
+	je	.LBB0_9                 # fdgk : 跳出迴圈
 .LBB0_2:                                # =>This Loop Header: Depth=1
                                         #     Child Loop BB0_3 Depth 2
-	xorl	%ecx, %ecx
+	xorl	%ecx, %ecx              # l --> 4 bytes, q --> 8 bytes
 	jmp	.LBB0_3
 	.p2align	4, 0x90
 .LBB0_7:                                #   in Loop: Header=BB0_3 Depth=2
 	addq	$2, %rcx
-	cmpq	$1024, %rcx             # imm = 0x400
-	je	.LBB0_8
+	cmpq	$1024, %rcx             # imm = 0x400  ==> for(int j = 0;j < 1024;j++)
+	je	.LBB0_8                 # 跳出迴圈 
 .LBB0_3:                                #   Parent Loop BB0_2 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
-	movl	(%r15,%rcx,4), %edx
-	movl	%edx, (%rbx,%rcx,4)
-	vmovss	(%r14,%rcx,4), %xmm0    # xmm0 = mem[0],zero,zero,zero
-	vmovd	%edx, %xmm1
-	vucomiss	%xmm1, %xmm0
-	jbe	.LBB0_5
+	movl	(%r15,%rcx,4), %edx     # r15 : pointer to a ;;; AT&T 的寫法：前面的值丟給後面的變數 ;; xmm0 --> 32 bits * 4
+	movl	%edx, (%rbx,%rcx,4)     # rbx : pointer to c ;;; c[0] = a[0]
+	movss	(%r14,%rcx,4), %xmm0    # r14 : pointer to b ;;; xmm0 = mem[0],zero,zero,zero
+	movd	%edx, %xmm1             # 現在 xmm0[0] 是 b[0] , xmm1[0] 是 a[0]  ==> 沒有 care c[0] 跟 b[0] 是相同值得情況？
+	ucomiss	%xmm1, %xmm0            # if(b[0] <= a[0]) 跳到標籤 .LBB0_5
+	jbe	.LBB0_5                 #     ;;; jbe --> if below or equal
 # %bb.4:                                #   in Loop: Header=BB0_3 Depth=2
-	vmovss	%xmm0, (%rbx,%rcx,4)
-.LBB0_5:                                #   in Loop: Header=BB0_3 Depth=2
-	movl	4(%r15,%rcx,4), %edx
-	movl	%edx, 4(%rbx,%rcx,4)
-	vmovss	4(%r14,%rcx,4), %xmm0   # xmm0 = mem[0],zero,zero,zero
-	vmovd	%edx, %xmm1
-	vucomiss	%xmm1, %xmm0
+	movss	%xmm0, (%rbx,%rcx,4)    # c[0] = b[0] 
+.LBB0_5:                                #   in Loop: Header=BB0_3 Depth=2 ;;; 簡單來說，就是上面的事情再做一遍
+	movl	4(%r15,%rcx,4), %edx    # r15 : pointer to b, rcx : counter
+	movl	%edx, 4(%rbx,%rcx,4)    # rbx : pointer to c(output)
+	movss	4(%r14,%rcx,4), %xmm0   # r14 : pointer to a ;;; xmm0 = mem[0],zero,zero,zero ;;; mov just "one" float to xmm0 ;;; in gdb, we can just &xmm0 ;;; 簡而言之，把 a[j] 單一一個 element 丟進 xmm0[0], xmm0 總共可容納 4 個 float
+	movd	%edx, %xmm1             # 把 b[j] 單一一個 element 丟進 xmm1[0] 
+	ucomiss	%xmm1, %xmm0
 	jbe	.LBB0_7
 # %bb.6:                                #   in Loop: Header=BB0_3 Depth=2
-	vmovss	%xmm0, 4(%rbx,%rcx,4)
-	jmp	.LBB0_7
+	movss	%xmm0, 4(%rbx,%rcx,4)
+	jmp	.LBB0_7                 # fdgk 回到迴圈的開頭 ;; depth = 2 的迴圈的底部
 .LBB0_9:
 	leaq	8(%rsp), %rsi
 	movl	$1, %edi
@@ -86,17 +92,19 @@ _Z5test2PfS_S_i:                        # @_Z5test2PfS_S_i
 	subq	%r13, %rax
 	movq	16(%rsp), %rcx
 	subq	%r12, %rcx
-	vcvtsi2sd	%rax, %xmm2, %xmm0
-	vcvtsi2sd	%rcx, %xmm2, %xmm1
-	vmulsd	.LCPI0_0(%rip), %xmm1, %xmm1
-	vaddsd	%xmm0, %xmm1, %xmm0
-	vmovsd	%xmm0, 24(%rsp)         # 8-byte Spill
+	xorps	%xmm0, %xmm0
+	cvtsi2sd	%rax, %xmm0
+	xorps	%xmm1, %xmm1
+	cvtsi2sd	%rcx, %xmm1
+	mulsd	.LCPI0_0(%rip), %xmm1
+	addsd	%xmm0, %xmm1
+	movsd	%xmm1, 24(%rsp)         # 8-byte Spill
 	movl	$_ZSt4cout, %edi
 	movl	$.L.str, %esi
 	movl	$47, %edx
 	callq	_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l
 	movl	$_ZSt4cout, %edi
-	vmovsd	24(%rsp), %xmm0         # 8-byte Reload
+	movsd	24(%rsp), %xmm0         # 8-byte Reload
                                         # xmm0 = mem[0],zero
 	callq	_ZNSo9_M_insertIdEERSoT_
 	movq	%rax, %rbx

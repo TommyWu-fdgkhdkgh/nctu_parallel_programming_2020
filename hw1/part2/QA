@@ -72,6 +72,20 @@ Q2-2 note:
 
 
 Q2-3: Provide a theory for why the compiler is generating dramatically different assembly.
+
+the bug of clang compiler, I guess?
+http://lists.llvm.org/pipermail/llvm-dev/2018-February/121227.html
+
+//c[j] = a[j]; // 加上這一行會優化失敗
+//c[j] = b[j]; // 加上這一行會優化成功
+if(b[j] > a[j]) c[j] = b[j];
+else c[j] = a[j];
+
+主要是會噴這一行：
+loop not vectorized: unsafe dependent memory  operations in loop. Use #pragma loop distribute(enable) to allow loop  distribution to attempt to  isolate the offending operations into a separate loop
+我猜是 compiler 本身的一些問題，將原本的程式判斷成 上一輪迴圈可能影響下一輪迴圈的值 ，導致 loop 沒辦法成功的展開， 並平行化
+
+
 這一題要連著 2.6 的範例來看的
 
 ------------------------------------------------
@@ -90,6 +104,10 @@ TODO : 感覺需要看最核心的部份，相同的意義，不同的寫法間�
 
 
 ------------------------------------------------
+
+
+
+
 
 
 

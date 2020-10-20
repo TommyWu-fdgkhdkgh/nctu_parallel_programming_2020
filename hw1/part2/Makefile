@@ -8,7 +8,8 @@ ifeq (/usr/bin/clang++-11,$(wildcard /usr/bin/clang++-11*))
     CXX=clang++-11
 endif
 
-CXXFLAGS := -I./common -O3 -std=c++17 -Wall
+#CXXFLAGS := -I./common -O3 -std=c++17 -Wall -g 
+CXXFLAGS := -I./common -O3 -std=c++17 -Wall 
 
 ifeq ($(ASSEMBLE),1)
 	CXXFLAGS += -S

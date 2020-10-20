@@ -1,14 +1,14 @@
 	.text
-	.file	"test1.cpp"
+	.file	"test2.cpp"
 	.section	.rodata.cst8,"aM",@progbits,8
-	.p2align	3               # -- Begin function _Z5test1PfS_S_i
+	.p2align	3               # -- Begin function _Z5test2PfS_S_i
 .LCPI0_0:
 	.quad	4472406533629990549     # double 1.0000000000000001E-9
 	.text
-	.globl	_Z5test1PfS_S_i
+	.globl	_Z5test2PfS_S_i
 	.p2align	4, 0x90
-	.type	_Z5test1PfS_S_i,@function
-_Z5test1PfS_S_i:                        # @_Z5test1PfS_S_i
+	.type	_Z5test2PfS_S_i,@function
+_Z5test2PfS_S_i:                        # @_Z5test2PfS_S_i
 	.cfi_startproc
 # %bb.0:
 	pushq	%r15
@@ -47,18 +47,18 @@ _Z5test1PfS_S_i:                        # @_Z5test1PfS_S_i
 	.p2align	4, 0x90
 .LBB0_3:                                #   Parent Loop BB0_2 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
-	movaps	(%rbx,%rcx,4), %xmm0
-	movaps	16(%rbx,%rcx,4), %xmm1
-	addps	(%r15,%rcx,4), %xmm0
-	addps	16(%r15,%rcx,4), %xmm1
-	movaps	%xmm0, (%r14,%rcx,4)
-	movaps	%xmm1, 16(%r14,%rcx,4)
-	movaps	32(%rbx,%rcx,4), %xmm0
-	movaps	48(%rbx,%rcx,4), %xmm1
-	addps	32(%r15,%rcx,4), %xmm0
-	addps	48(%r15,%rcx,4), %xmm1
-	movaps	%xmm0, 32(%r14,%rcx,4)
-	movaps	%xmm1, 48(%r14,%rcx,4)
+	movaps	(%r15,%rcx,4), %xmm0
+	movaps	16(%r15,%rcx,4), %xmm1
+	maxps	(%rbx,%rcx,4), %xmm0
+	maxps	16(%rbx,%rcx,4), %xmm1
+	movups	%xmm0, (%r14,%rcx,4)
+	movups	%xmm1, 16(%r14,%rcx,4)
+	movaps	32(%r15,%rcx,4), %xmm0
+	movaps	48(%r15,%rcx,4), %xmm1
+	maxps	32(%rbx,%rcx,4), %xmm0
+	maxps	48(%rbx,%rcx,4), %xmm1
+	movups	%xmm0, 32(%r14,%rcx,4)
+	movups	%xmm1, 48(%r14,%rcx,4)
 	addq	$16, %rcx
 	cmpq	$1024, %rcx             # imm = 0x400
 	jne	.LBB0_3
@@ -133,13 +133,13 @@ _Z5test1PfS_S_i:                        # @_Z5test1PfS_S_i
 	movl	$75, %edx
 	callq	__assert_fail
 .Lfunc_end0:
-	.size	_Z5test1PfS_S_i, .Lfunc_end0-_Z5test1PfS_S_i
+	.size	_Z5test2PfS_S_i, .Lfunc_end0-_Z5test2PfS_S_i
 	.cfi_endproc
                                         # -- End function
 	.section	.text.startup,"ax",@progbits
-	.p2align	4, 0x90         # -- Begin function _GLOBAL__sub_I_test1.cpp
-	.type	_GLOBAL__sub_I_test1.cpp,@function
-_GLOBAL__sub_I_test1.cpp:               # @_GLOBAL__sub_I_test1.cpp
+	.p2align	4, 0x90         # -- Begin function _GLOBAL__sub_I_test2.cpp
+	.type	_GLOBAL__sub_I_test2.cpp,@function
+_GLOBAL__sub_I_test2.cpp:               # @_GLOBAL__sub_I_test2.cpp
 	.cfi_startproc
 # %bb.0:
 	pushq	%rax
@@ -153,7 +153,7 @@ _GLOBAL__sub_I_test1.cpp:               # @_GLOBAL__sub_I_test1.cpp
 	.cfi_def_cfa_offset 8
 	jmp	__cxa_atexit            # TAILCALL
 .Lfunc_end1:
-	.size	_GLOBAL__sub_I_test1.cpp, .Lfunc_end1-_GLOBAL__sub_I_test1.cpp
+	.size	_GLOBAL__sub_I_test2.cpp, .Lfunc_end1-_GLOBAL__sub_I_test2.cpp
 	.cfi_endproc
                                         # -- End function
 	.type	_ZStL8__ioinit,@object  # @_ZStL8__ioinit
@@ -163,7 +163,7 @@ _GLOBAL__sub_I_test1.cpp:               # @_GLOBAL__sub_I_test1.cpp
 	.type	.L.str,@object          # @.str
 	.section	.rodata.str1.1,"aMS",@progbits,1
 .L.str:
-	.asciz	"Elapsed execution time of the loop in test1():\n"
+	.asciz	"Elapsed execution time of the loop in test2():\n"
 	.size	.L.str, 48
 
 	.type	.L.str.1,@object        # @.str.1
@@ -198,11 +198,11 @@ _GLOBAL__sub_I_test1.cpp:               # @_GLOBAL__sub_I_test1.cpp
 
 	.section	.init_array,"aw",@init_array
 	.p2align	3
-	.quad	_GLOBAL__sub_I_test1.cpp
+	.quad	_GLOBAL__sub_I_test2.cpp
 	.ident	"clang version 10.0.0-4ubuntu1 "
 	.section	".note.GNU-stack","",@progbits
 	.addrsig
-	.addrsig_sym _GLOBAL__sub_I_test1.cpp
+	.addrsig_sym _GLOBAL__sub_I_test2.cpp
 	.addrsig_sym _ZStL8__ioinit
 	.addrsig_sym __dso_handle
 	.addrsig_sym _ZSt4cout
