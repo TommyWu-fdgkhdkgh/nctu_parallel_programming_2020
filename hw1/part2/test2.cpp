@@ -3,12 +3,17 @@
 #include "fasttime.h"
 
 void test2(float *__restrict a, float *__restrict b, float *__restrict c, int N)
+//void test2(int *__restrict a, int *__restrict b, int *__restrict c, int N)
+//void test2(float[] __restrict a, float[] __restrict b, float[] __restrict c, int N)
 {
   __builtin_assume(N == 1024);
+  
   a = (float *)__builtin_assume_aligned(a, 16);
   b = (float *)__builtin_assume_aligned(b, 16);
-
-  float g = 10;
+  
+  /*a = (float *)__builtin_assume_aligned(a, 16);
+  b = (float *)__builtin_assume_aligned(b, 16);
+  c = (float *)__builtin_assume_aligned(c, 16);*/
 
   fasttime_t time1 = gettime();
   for (int i = 0; i < I; i++)
@@ -25,10 +30,10 @@ void test2(float *__restrict a, float *__restrict b, float *__restrict c, int N)
       //
       // 測試： 去掉 if 後也能 movaps
       
-      //c[j] = a[j];
+      c[j] = a[j];
       //*
-      //if (b[j] > a[j])
-      //  c[j] = b[j];
+      if (b[j] > a[j])
+        c[j] = b[j];
       //*/
 
       // 優化失敗

@@ -103,6 +103,59 @@ TODO : 感覺需要看最核心的部份，相同的意義，不同的寫法間�
 明天待續
 
 
+ // Write to the same location with the same size.
+  // Could be improved to assert type sizes are the same (i32 == float, etc).
+  if (Val == 0) {
+    if (ATy == BTy)
+      return Dependence::Forward;
+    LLVM_DEBUG(
+        dbgs() << "LAA: Zero dependence difference but different types\n");
+    return Dependence::Unknown;
+  }
+
+
+在 clang 編譯的過程中，不知道為什麼一開始
+c[j] = a[j] 的部份，會將 float* 變成 i32*。
+於是在 vectorize 分析 loop 的時候，會認為對同一個位置  (c[j]) 給予不同型態的值，變成無法被 vectorize
+
+
+`````````````````````````````````````````
+c[j] = a[j] 的 IR
+
+for.body8:                                        ; preds = %for.inc.1, %for.cond5.preheader
+  %indvars.iv = phi i64 [ 0, %for.cond5.preheader ], [ %indvars.iv.next.1, %for.inc.1 ]
+  %arrayidx = getelementptr inbounds float, float* %a, i64 %indvars.iv
+  %4 = bitcast float* %arrayidx to i32*                                          ### cast to float *
+  %5 = load i32, i32* %4, align 8, !tbaa !2
+  %arrayidx10 = getelementptr inbounds float, float* %c, i64 %indvars.iv
+  %6 = bitcast float* %arrayidx10 to i32*
+  store i32 %5, i32* %6, align 4, !tbaa !2                                       ### store int to int
+  %arrayidx12 = getelementptr inbounds float, float* %b, i64 %indvars.iv
+  %7 = load float, float* %arrayidx12, align 8, !tbaa !2
+  %.cast = bitcast i32 %5 to float
+  %cmp15 = fcmp ogt float %7, %.cast
+  br i1 %cmp15, label %if.then, label %for.inc
+
+-----------------------------------------
+
+c[j] = b[j] 的 IR
+  store float %7, float* %arrayidx10, align 4, !tbaa !2                          ### store float to float
+
+-----------------------------------------
+
+vectorizer 的 log 訊息  --> 簡言之，因為對同一個位址給予不同型態的值 (int & float) 於是給予錯誤提示： Zero dependence difference but different types
+
+  LAA: Distance for   store i32 %5, i32* %6, align 4, !dbg !59, !tbaa !54 to   store float %7, float* %arrayidx13, align 4, !dbg !63, !tbaa !54: 0
+  LAA: Zero dependence difference but different types
+  Total Dependences: 1
+  LAA: unsafe dependent memory operations in loop
+  test2.cpp:22:5: remark: loop not vectorized: unsafe dependent memory operations in loop. Use #pragma loop distribute(enable) to allow loop distribution to attempt to isolate the offending operations into a separate loop. fdgk HIHI! [-Rpass-analysis=loop-vectorize]
+    for (int j = 0; j < N; j++)
+    ^
+
+
+`````````````````````````````````````````
+
 ------------------------------------------------
 
 

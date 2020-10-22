@@ -42,12 +42,12 @@ _Z5test2PfS_S_i:                        # @_Z5test2PfS_S_i
 	xorl	%eax, %eax
 	jmp	.LBB0_2
 	.p2align	4, 0x90
-.LBB0_8:                                # %for.cond.cleanup10
+.LBB0_8:                                # %for.cond.cleanup7
                                         #   in Loop: Header=BB0_2 Depth=1
 	addl	$1, %eax
 	cmpl	$20000000, %eax         # imm = 0x1312D00
 	je	.LBB0_9
-.LBB0_2:                                # %for.cond8.preheader
+.LBB0_2:                                # %for.cond5.preheader
                                         # =>This Loop Header: Depth=1
                                         #     Child Loop BB0_3 Depth 2
 	xorl	%ecx, %ecx
@@ -58,7 +58,7 @@ _Z5test2PfS_S_i:                        # @_Z5test2PfS_S_i
 	addq	$2, %rcx
 	cmpq	$1024, %rcx             # imm = 0x400
 	je	.LBB0_8
-.LBB0_3:                                # %for.body11
+.LBB0_3:                                # %for.body8
                                         #   Parent Loop BB0_2 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
 	movl	(%r15,%rcx,4), %edx
@@ -88,7 +88,7 @@ _Z5test2PfS_S_i:                        # @_Z5test2PfS_S_i
 	callq	clock_gettime
 	testl	%eax, %eax
 	jne	.LBB0_11
-# %bb.10:                               # %_ZL7gettimev.exit70
+# %bb.10:                               # %_ZL7gettimev.exit66
 	movq	8(%rsp), %rax
 	subq	%r13, %rax
 	movq	16(%rsp), %rcx
