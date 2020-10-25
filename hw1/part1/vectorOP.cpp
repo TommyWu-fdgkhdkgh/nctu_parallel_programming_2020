@@ -155,9 +155,22 @@ float arraySumVector(float *values, int N)
   // PP STUDENTS TODO: Implement your vectorized version of arraySumSerial here
   //
 
+  __pp_vec_float result = _pp_vset_float(0.0f);
+  __pp_vec_float x;
+  __pp_mask maskAll =  _pp_init_ones(); 
+
   for (int i = 0; i < N; i += VECTOR_WIDTH)
   {
+    _pp_vload_float(x, values + i, maskAll); 
+    
+    _pp_vadd_float(result, result, x, maskAll);
   }
 
-  return 0.0;
+  float f = 0.0f;
+
+  for(int i = 0;i < VECTOR_WIDTH;i++) {
+    f += result.value[i];
+  }
+
+  return f;
 }
