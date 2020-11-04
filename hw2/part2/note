@@ -1,0 +1,12 @@
+Q1: In your write-up, produce a graph of speedup compared to the reference sequential implementation as a function of the number of threads used FOR VIEW 1. Is speedup linear in the number of threads used? In your writeup hypothesize why this is (or is not) the case? (You may also wish to produce a graph for VIEW 2 to help you come up with a good answer. Hint: take a careful look at the three-thread data-point.)
+
+
+黑點越多，計算次數也越多。 黑點越多的區間，那個 thread 需要花的時間也就越多。
+其實把每個 thread 所使用的時間也紀錄下來，應該就能知道  bottle neck 是不是我預想中的那樣。
+第一章圖 (view1) ，每個 thread 的計算量並不公平。最左邊有一大塊黑黑的部份，表示那部份需要比較久的計算時間。變成大家都要等那個 thread 做完事情。
+-t 3 甚至比 -t 2 還要慢。我想是因為 view 1 剛好是從中間對稱，而我們又剛好是以 row 來切分 thread 所需要計算的範圍，當 t == 2 的時候，兩個 thread 的工作量很公平 (原來 API 開成那樣是這個原因。)
+
+
+助教所給的 hint ， 我想應該就是這樣，從 view2 可以看到，每個 thread 所需要計算的量比較公平，所以 thread -t 3 開下去的加速很明顯。
+
+

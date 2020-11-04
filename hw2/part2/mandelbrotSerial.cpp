@@ -37,15 +37,19 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+// 我猜， z_re ==> 實部
+//        c_re ==> 虛部
 static inline int mandel(float c_re, float c_im, int count)
 {
   float z_re = c_re, z_im = c_im;
   int i;
   for (i = 0; i < count; ++i)
   {
-
-    if (z_re * z_re + z_im * z_im > 4.f)
+    
+    if (z_re * z_re + z_im * z_im > 4.f) {
+      // escape radius : https://zh.wikipedia.org/wiki/%E6%9B%BC%E5%BE%B7%E5%8D%9A%E9%9B%86%E5%90%88#%E5%AE%9A%E4%B9%89
       break;
+    }
 
     float new_re = z_re * z_re - z_im * z_im;
     float new_im = 2.f * z_re * z_im;
@@ -62,7 +66,7 @@ static inline int mandel(float c_re, float c_im, int count)
 // Compute an image visualizing the mandelbrot set.  The resulting
 // array contains the number of iterations required before the complex
 // number corresponding to a pixel could be rejected from the set.
-//
+//oat c_re, float c_im
 // * x0, y0, x1, y1 describe the complex coordinates mapping
 //   into the image viewport.
 // * width, height describe the size of the output image

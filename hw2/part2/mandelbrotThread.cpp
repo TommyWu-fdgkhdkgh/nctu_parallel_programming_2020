@@ -34,8 +34,18 @@ void workerThreadStart(WorkerArgs *const args)
     // to compute a part of the output image.  For example, in a
     // program that uses two threads, thread 0 could compute the top
     // half of the image and thread 1 could compute the bottom half.
+    int total_slice = args->height / args->numThreads; // numThreads 不一定能整除
+    int startRow;// = args->threadId * total_slice;
 
-    printf("Hello world from thread %d\n", args->threadId);
+    if(args->threadId == 0) {
+        total_slice = args->height - (args->numThreads-1) * total_slice; 
+	startRow = 0;
+    } else {
+        startRow = (args->height - (args->numThreads-1) * total_slice) + (args->threadId - 1) * total_slice;
+    }
+
+    mandelbrotSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height, startRow, total_slice, args->maxIterations, args->output);
+    printf("Hello world from thread %d, startRow : %d, total_slice : %d\n", args->threadId, startRow, total_slice);
 }
 
 //

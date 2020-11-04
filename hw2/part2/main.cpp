@@ -70,7 +70,12 @@ int main(int argc, char** argv) {
 
     const unsigned int width = 1600;
     const unsigned int height = 1200;
+
     const int maxIterations = 256;
+    // 當迭代次數超過 maxIterations 後，就認定其為 Mandelbrot set 
+    // 我猜，因為一個 bit 的值是 256 的話，剛好就是黑色
+    //
+
     int numThreads = 2;
 
     float x0 = -2;
@@ -128,8 +133,9 @@ int main(int argc, char** argv) {
     //
 
     double minSerial = 1e30;
+    // 我猜連續做 5 次是為了算出平均時間。
     for (int i = 0; i < 5; ++i) {
-       memset(output_serial, 0, width * height * sizeof(int));
+        memset(output_serial, 0, width * height * sizeof(int));
         double startTime = CycleTimer::currentSeconds();
         mandelbrotSerial(x0, y0, x1, y1, width, height, 0, height, maxIterations, output_serial);
         double endTime = CycleTimer::currentSeconds();
@@ -141,11 +147,10 @@ int main(int argc, char** argv) {
 
     //
     // Run the threaded version
-    //
 
     double minThread = 1e30;
     for (int i = 0; i < 5; ++i) {
-      memset(output_thread, 0, width * height * sizeof(int));
+        memset(output_thread, 0, width * height * sizeof(int));
         double startTime = CycleTimer::currentSeconds();
         mandelbrotThread(numThreads, x0, y0, x1, y1, width, height, maxIterations, output_thread);
         double endTime = CycleTimer::currentSeconds();

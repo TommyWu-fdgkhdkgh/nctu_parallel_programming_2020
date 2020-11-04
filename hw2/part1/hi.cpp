@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <sys/sysinfo.h>
 #include <time.h>
+#include "fasttime.h"
 
 #define _GNU_SOURCE
 
@@ -83,6 +84,8 @@ int main (int argc, char *argv[]) {
     printf("malloc pthread error\n");
   } 
 
+  
+  fasttime_t time1 = gettime();
   // calculate child_tosses and root_tosses
   long long int child_tosses = tosses / cpus; 
   long long int root_tosses = tosses - child_tosses * (cpus - 1); 
@@ -130,7 +133,11 @@ int main (int argc, char *argv[]) {
   }
 
   pi_estimate = 4 * number_in_circle/((double) tosses); 
+
+  fasttime_t time2 = gettime();
+  double elapsedf = tdiff(time1, time2);
   printf("pi : %lf\n", pi_estimate);
+  printf("Elapsed execution time : %lf\n", elapsedf);
 
   return 0;
 }

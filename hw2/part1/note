@@ -4,3 +4,18 @@
 目前很怪，會 sysmalloc assertion failed
 約會回來看看 https://man7.org/linux/man-pages/man3/CPU_SET.3.html
 我猜是我 macro 的用法錯了
+
+
+在這個例子， vectorize 好像沒什麼作用耶。。。
+我猜是因為 rand_r 沒辦法一次產生那麼多的 rand num
+
+
+還是有許多方法可以加速的：
+https://indico.cern.ch/event/727112/contributions/3097294/attachments/1708255/2753368/VRNG-Geant42018.pdf
+https://github.com/lemire/simdpcg
+
+PCG --> 一種 pseudo-random number generators(RNG) 的演算法
+有人將塌實做成符合 avx2 加速的版本
+
+
+
