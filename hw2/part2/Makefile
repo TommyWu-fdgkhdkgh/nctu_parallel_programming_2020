@@ -1,6 +1,8 @@
 
 CXX=g++ -m64
-CXXFLAGS=-I./common -Iobjs/ -O3 -std=c++17 -Wall
+#CXX=clang++ -m64
+CXXFLAGS=-I./common -Iobjs/ -O3 -std=c++17 -Wall 
+#CXXFLAGS=-I./common -Iobjs/ -O3 -std=c++17 -Wall -Rpass=loop-vectorize -Rpass-missed=loop-vectorize -Rpass-analysis=loop-vectorize
 
 APP_NAME=mandelbrot
 OBJDIR=objs

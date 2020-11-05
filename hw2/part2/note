@@ -1,6 +1,10 @@
-Q1: In your write-up, produce a graph of speedup compared to the reference sequential implementation as a function of the number of threads used FOR VIEW 1. Is speedup linear in the number of threads used? In your writeup hypothesize why this is (or is not) the case? (You may also wish to produce a graph for VIEW 2 to help you come up with a good answer. Hint: take a careful look at the three-thread data-point.)
+Q1: In your write-up, produce a graph of speedup compared to the reference sequential implementation as a function of the number of threads used FOR VIEW 1. 
 
+1. Is speedup linear in the number of threads used? 
+2. In your writeup hypothesize why this is (or is not) the case? (You may also wish to produce a graph for VIEW 2 to help you come up with a good answer. Hint: take a careful look at the three-thread data-point.)
 
+1. no
+2. 
 黑點越多，計算次數也越多。 黑點越多的區間，那個 thread 需要花的時間也就越多。
 其實把每個 thread 所使用的時間也紀錄下來，應該就能知道  bottle neck 是不是我預想中的那樣。
 第一章圖 (view1) ，每個 thread 的計算量並不公平。最左邊有一大塊黑黑的部份，表示那部份需要比較久的計算時間。變成大家都要等那個 thread 做完事情。
@@ -8,5 +12,81 @@ Q1: In your write-up, produce a graph of speedup compared to the reference seque
 
 
 助教所給的 hint ， 我想應該就是這樣，從 view2 可以看到，每個 thread 所需要計算的量比較公平，所以 thread -t 3 開下去的加速很明顯。
+
+
+我就懶的畫圖了 XD
+簡圖如下
+
+
+thread 1
+
+---------- 
+
+thread 2
+
+-------------------- 將近兩倍
+
+thread 3
+
+---------------      退化成 1.5 倍
+
+thread 4
+
+
+------------------------- 2.5x
+
+---------------------------------------------------------------------
+Q2: How do your measurements explain the speedup graph you previously created?
+
+從這邊可以看到，中間的那個 thread 運算量最大。
+
+Hello world from thread 0, startRow : 0, total_slice : 400, total count : 26252661,  using 		[85.393] ms
+
+Hello world from thread 2, startRow : 800, total_slice : 400, total count : 26404362,  using 		[85.965] ms
+
+Hello world from thread 1, startRow : 400, total_slice : 400, total count : 80554923,  using 		[260.284] ms
+
+---------------------------------------------------------------------
+Q3: In your write-up, describe your approach to parallelization and report the final 4-thread speedup obtained.
+
+現在變慢是因為工作分配不公，那分配不公式因為它白白的一坨集中在那邊
+那交叉使用呢？ 就可以公平的分配那白白的一坨了。
+
+成功啦～ 3.89x 的效率，贊啦
+由此可知，多 thread 的環境下，負載平衡是相當重要的
+
+
+---------------------------------------------------------------------
+Q4: Now run your improved code with eight threads. Is performance noticeably greater than when running with four threads? Why or why not? (Notice that the workstation server provides 4 cores 4 threads.)
+
+我覺的不會變得比較快吧，最多同時也就 4 個 thread　在跑
+
+
+
+---------------------------------------------------------------------
+從這邊可以看到，中間的那個 thread 運算量最大。
+
+
+
+Hello world from thread 0, startRow : 0, total_slice : 400, total count : 26252661,  using 		[85.393] ms
+
+Hello world from thread 2, startRow : 800, total_slice : 400, total count : 26404362,  using 		[85.965] ms
+
+Hello world from thread 1, startRow : 400, total_slice : 400, total count : 80554923,  using 		[260.284] ms
+--------------------
+Hello world from thread 0, startRow : 0, total_slice : 400, using 		[83.286] ms
+
+Hello world from thread 2, startRow : 800, total_slice : 400, using 		[83.822] ms
+
+Hello world from thread 1, startRow : 400, total_slice : 400, using 		[256.359] ms
+
+
+
+
+
+
+
+
+
 
 

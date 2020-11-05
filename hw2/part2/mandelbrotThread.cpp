@@ -15,7 +15,14 @@ typedef struct
     int numThreads;
 } WorkerArgs;
 
-extern void mandelbrotSerial(
+extern int mandelbrotSerialForThread(
+    float x0, float y0, float x1, float y1,
+    int width, int height,
+    int startRow, int totalRows,
+    int maxIterations,
+    int output[], int threadId, int numThreads);
+
+extern int mandelbrotSerial(
     float x0, float y0, float x1, float y1,
     int width, int height,
     int startRow, int numRows,
@@ -34,6 +41,7 @@ void workerThreadStart(WorkerArgs *const args)
     // to compute a part of the output image.  For example, in a
     // program that uses two threads, thread 0 could compute the top
     // half of the image and thread 1 could compute the bottom half.
+    /*
     int total_slice = args->height / args->numThreads; // numThreads 不一定能整除
     int startRow;// = args->threadId * total_slice;
 
@@ -44,8 +52,14 @@ void workerThreadStart(WorkerArgs *const args)
         startRow = (args->height - (args->numThreads-1) * total_slice) + (args->threadId - 1) * total_slice;
     }
 
-    mandelbrotSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height, startRow, total_slice, args->maxIterations, args->output);
-    printf("Hello world from thread %d, startRow : %d, total_slice : %d\n", args->threadId, startRow, total_slice);
+    double startTime = CycleTimer::currentSeconds();
+    int total = mandelbrotSerial(args->x0, args->y0, args->x1, args->y1, args->width, args->height, startRow, total_slice, args->maxIterations, args->output);
+    double endTime = CycleTimer::currentSeconds();
+    printf("Hello world from thread %d, startRow : %d, total_slice : %d, total count : %d,  using \t\t[%.3f] ms\n\n", args->threadId, startRow, total_slice, total, (endTime-startTime) * 1000);
+    */
+    // new try
+    mandelbrotSerialForThread(args->x0, args->y0, args->x1, args->y1, args->width, args->height, 0, args->height, args->maxIterations, args->output, args->threadId, args->numThreads);
+
 }
 
 //
