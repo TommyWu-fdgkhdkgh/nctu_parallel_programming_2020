@@ -3,6 +3,9 @@
 // Floaging point arrays here are named as in spec discussion of
 // CG algorithm
 //---------------------------------------------------------------------
+// fdgk spec discussion 在哪？
+// https://en.wikipedia.org/wiki/Conjugate_gradient_method#Example_code_in_MATLAB_/_GNU_Octave 可以看這一篇的
+//   The preconditioned conjugate gradient method
 void conj_grad(int colidx[],
                int rowstr[],
                double x[],
@@ -34,10 +37,23 @@ void conj_grad(int colidx[],
     // rho = r.r
     // Now, obtain the norm of r: First, sum squares of r elements locally...
     //---------------------------------------------------------------------
-    for (j = 0; j < lastcol - firstcol + 1; j++)
+    /*for (j = 0; j < lastcol - firstcol + 1; j++)
     {
         rho = rho + r[j] * r[j];
+    }*/
+    omp_set_num_threads(THREAD_NUM);
+    #pragma omp parallel
+    {
+        int threadID = omp_get_thread_num();
+        threadTempDouble[threadID][0] = 0;
+        for(j = threadID;j < lastcol - firstcol + 1;j += THREAD_NUM){
+            threadTempDouble[threadID][0] = threadTempDouble[threadID][0] + r[j] * r[j]; 
+	}
     }
+    for(int i = 0;i < THREAD_NUM;i++) {
+        rho += threadTempDouble[i][0];
+    }
+
 
     //---------------------------------------------------------------------
     //---->
@@ -57,7 +73,7 @@ void conj_grad(int colidx[],
         //       unrolled-by-two version is some 10% faster.
         //       The unrolled-by-8 version below is significantly faster
         //       on the Cray t3d - overall speed of code is 1.5 times faster.
-        for (j = 0; j < lastrow - firstrow + 1; j++)
+        /*for (j = 0; j < lastrow - firstrow + 1; j++)
         {
             sum = 0.0;
             for (k = rowstr[j]; k < rowstr[j + 1]; k++)
@@ -65,15 +81,37 @@ void conj_grad(int colidx[],
                 sum = sum + a[k] * p[colidx[k]];
             }
             q[j] = sum;
+        }*/
+        #pragma omp parallel
+        {
+            int threadID = omp_get_thread_num();
+            for(j = threadID;j < lastcol - firstcol + 1;j += THREAD_NUM){
+                double tempSum = 0.0;
+                for(int k = rowstr[j];k < rowstr[j + 1];k++) {
+                    tempSum = tempSum + a[k] * p[colidx[k]];
+		        }
+                q[j] = tempSum;
+	        }
         }
 
         //---------------------------------------------------------------------
         // Obtain p.q
         //---------------------------------------------------------------------
         d = 0.0;
-        for (j = 0; j < lastcol - firstcol + 1; j++)
+        /*for (j = 0; j < lastcol - firstcol + 1; j++)
         {
             d = d + p[j] * q[j];
+        }*/
+        #pragma omp parallel
+        {
+            int threadID = omp_get_thread_num();
+            threadTempDouble[threadID][0] = 0;
+            for(int j = threadID;j < lastcol - firstcol + 1;j += THREAD_NUM) {
+                threadTempDouble[threadID][0] = threadTempDouble[threadID][0] + p[j] * q[j];    
+            }
+        }
+        for(int i = 0;i < THREAD_NUM;i++) {
+            d += threadTempDouble[i][0];
         }
 
         //---------------------------------------------------------------------
@@ -91,19 +129,43 @@ void conj_grad(int colidx[],
         // and    r = r - alpha*q
         //---------------------------------------------------------------------
         rho = 0.0;
-        for (j = 0; j < lastcol - firstcol + 1; j++)
+        /*for (j = 0; j < lastcol - firstcol + 1; j++)
         {
             z[j] = z[j] + alpha * p[j];
             r[j] = r[j] - alpha * q[j];
+        }*/
+        
+        // 這個改動反而變慢了，我猜是 false sharing?
+        // 但有時又會突然變快
+        #pragma omp parallel
+        {
+            int threadID = omp_get_thread_num();
+            for(int j = threadID;j < lastcol - firstcol + 1;j += THREAD_NUM) {
+                z[j] = z[j] + alpha * p[j];
+                r[j] = r[j] - alpha * q[j];
+            }
         }
+       
 
         //---------------------------------------------------------------------
         // rho = r.r
         // Now, obtain the norm of r: First, sum squares of r elements locally...
         //---------------------------------------------------------------------
-        for (j = 0; j < lastcol - firstcol + 1; j++)
+        /*for (j = 0; j < lastcol - firstcol + 1; j++)
         {
             rho = rho + r[j] * r[j];
+        }*/
+        // 這個改動會變慢
+        #pragma omp parallel
+        {
+            int threadID = omp_get_thread_num();
+            threadTempDouble[threadID][0] = 0;
+            for(j = threadID;j < lastcol - firstcol + 1;j += THREAD_NUM){
+                threadTempDouble[threadID][0] = threadTempDouble[threadID][0] + r[j] * r[j];
+        }
+        }
+        for(int i = 0;i < THREAD_NUM;i++) {
+            rho += threadTempDouble[i][0];
         }
 
         //---------------------------------------------------------------------
@@ -114,10 +176,18 @@ void conj_grad(int colidx[],
         //---------------------------------------------------------------------
         // p = r + beta*p
         //---------------------------------------------------------------------
-        for (j = 0; j < lastcol - firstcol + 1; j++)
+        /*for (j = 0; j < lastcol - firstcol + 1; j++)
         {
             p[j] = r[j] + beta * p[j];
+        }*/
+        #pragma omp parallel
+        {
+            int threadID = omp_get_thread_num();
+            for(j = threadID;j < lastcol - firstcol + 1;j += THREAD_NUM) {
+                p[j] = r[j] + beta * p[j];
+            }
         }
+
     } // end of do cgit=1,cgitmax
 
     //---------------------------------------------------------------------
@@ -126,7 +196,7 @@ void conj_grad(int colidx[],
     // The partition submatrix-vector multiply
     //---------------------------------------------------------------------
     sum = 0.0;
-    for (j = 0; j < lastrow - firstrow + 1; j++)
+    /*for (j = 0; j < lastrow - firstrow + 1; j++)
     {
         d = 0.0;
         for (k = rowstr[j]; k < rowstr[j + 1]; k++)
@@ -134,15 +204,40 @@ void conj_grad(int colidx[],
             d = d + a[k] * z[colidx[k]];
         }
         r[j] = d;
+    }*/
+    #pragma omp parallel 
+    {
+        int threadID = omp_get_thread_num();
+        for(j = threadID;j < lastrow - firstrow + 1;j += THREAD_NUM) {
+            double tempD = 0.0;
+            for(k = rowstr[j];k < rowstr[j + 1];k++) {
+                tempD = tempD + a[k] * z[colidx[k]];
+            }
+            r[j] = d;
+        }
     }
 
     //---------------------------------------------------------------------
     // At this point, r contains A.z
     //---------------------------------------------------------------------
-    for (j = 0; j < lastcol - firstcol + 1; j++)
+    /*for (j = 0; j < lastcol - firstcol + 1; j++)
     {
         d = x[j] - r[j];
         sum = sum + d * d;
+    }*/
+
+    #pragma omp parallel
+    {
+        int threadID = omp_get_thread_num();
+        double tempD;
+        threadTempDouble[threadID][0] = 0;
+        for(int j = threadID;j < lastcol - firstcol + 1;j += THREAD_NUM) {
+            tempD = x[j] - r[j];
+            threadTempDouble[threadID][0] = threadTempDouble[threadID][0] + tempD * tempD;
+        }
+    }
+    for(int i = 0;i < THREAD_NUM;i++) {
+        sum += threadTempDouble[i][0];
     }
 
     *rnorm = sqrt(sum);
@@ -580,10 +675,25 @@ void iterate(double *zeta, int *it)
     //---------------------------------------------------------------------
     norm_temp1 = 0.0;
     norm_temp2 = 0.0;
-    for (j = 0; j < lastcol - firstcol + 1; j++)
+    /*for (j = 0; j < lastcol - firstcol + 1; j++)
     {
         norm_temp1 = norm_temp1 + x[j] * z[j];
         norm_temp2 = norm_temp2 + z[j] * z[j];
+    }*/
+    omp_set_num_threads(THREAD_NUM);
+    #pragma omp parallel
+    {
+        int threadID = omp_get_thread_num();
+        threadTempDouble[threadID][0] = 0;
+        threadTempDouble2[threadID][0] = 0;
+        for(int j = threadID;j < lastcol - firstcol + 1;j += THREAD_NUM) {
+            threadTempDouble[threadID][0] = threadTempDouble[threadID][0] + x[j] * z[j];
+            threadTempDouble2[threadID][0] = threadTempDouble2[threadID][0] + z[j] * z[j];
+        }
+    }
+    for(int i = 0;i < THREAD_NUM;i++) {
+        norm_temp1 += threadTempDouble[i][0];
+        norm_temp2 += threadTempDouble2[i][0];
     }
 
     norm_temp2 = 1.0 / sqrt(norm_temp2);
@@ -596,8 +706,15 @@ void iterate(double *zeta, int *it)
     //---------------------------------------------------------------------
     // Normalize z to obtain x
     //---------------------------------------------------------------------
-    for (j = 0; j < lastcol - firstcol + 1; j++)
+    /*for (j = 0; j < lastcol - firstcol + 1; j++)
     {
         x[j] = norm_temp2 * z[j];
+    }*/
+    #pragma omp parallel
+    {
+        int threadID = omp_get_thread_num();
+        for(int j = threadID;j < lastcol - firstcol + 1;j += THREAD_NUM) {
+            x[j] = norm_temp2 * z[j];
+        }
     }
 }

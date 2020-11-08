@@ -8,6 +8,14 @@
 #include "timers.h"
 
 //---------------------------------------------------------------------
+/* openmp stuff */
+#define THREAD_NUM 12
+#define PADDING 8
+double threadTempDouble[THREAD_NUM][PADDING];
+double threadTempDouble2[THREAD_NUM][PADDING];
+int threadTempInt[THREAD_NUM][PADDING];
+
+//---------------------------------------------------------------------
 /* common / main_int_mem / */
 int colidx[NZ];
 int rowstr[NA + 1];
